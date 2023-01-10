@@ -15,6 +15,8 @@
 		9CA56323296C7FDB00F0892C /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA56322296C7FDB00F0892C /* AppCoordinator.swift */; };
 		9CA56325296C802000F0892C /* AppCoordinatorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA56324296C802000F0892C /* AppCoordinatorProtocol.swift */; };
 		9CA56327296C81B300F0892C /* UIFont+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA56326296C81B300F0892C /* UIFont+.swift */; };
+		9CA5632C296C8AE500F0892C /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA5632B296C8AE500F0892C /* Reminder.swift */; };
+		9CA5632F296C943F00F0892C /* Date+Today.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA5632E296C943F00F0892C /* Date+Today.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,8 @@
 		9CA56322296C7FDB00F0892C /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		9CA56324296C802000F0892C /* AppCoordinatorProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinatorProtocol.swift; sourceTree = "<group>"; };
 		9CA56326296C81B300F0892C /* UIFont+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+.swift"; sourceTree = "<group>"; };
+		9CA5632B296C8AE500F0892C /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
+		9CA5632E296C943F00F0892C /* Date+Today.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Today.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				9CA5631F296C7E8B00F0892C /* App */,
+				9CA5632D296C8AEA00F0892C /* Models */,
 				9CA56329296C834C00F0892C /* Modules */,
 				9CA56328296C81BC00F0892C /* Extensions */,
 				9CA56320296C7E9C00F0892C /* Support files */,
@@ -101,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				9CA56326296C81B300F0892C /* UIFont+.swift */,
+				9CA5632E296C943F00F0892C /* Date+Today.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -119,6 +125,14 @@
 				9CA5630F296C7E1100F0892C /* MainViewController.swift */,
 			);
 			path = Main;
+			sourceTree = "<group>";
+		};
+		9CA5632D296C8AEA00F0892C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9CA5632B296C8AE500F0892C /* Reminder.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -196,7 +210,9 @@
 				9CA5630C296C7E1100F0892C /* AppDelegate.swift in Sources */,
 				9CA56325296C802000F0892C /* AppCoordinatorProtocol.swift in Sources */,
 				9CA56327296C81B300F0892C /* UIFont+.swift in Sources */,
+				9CA5632F296C943F00F0892C /* Date+Today.swift in Sources */,
 				9CA5630E296C7E1100F0892C /* SceneDelegate.swift in Sources */,
+				9CA5632C296C8AE500F0892C /* Reminder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
