@@ -48,7 +48,7 @@ extension MainViewController {
     private func listLayout() -> UICollectionViewCompositionalLayout {
         var listConfiguration = UICollectionLayoutListConfiguration(appearance: .grouped)
         listConfiguration.showsSeparators = false
-        listConfiguration.backgroundColor = .clear
+        listConfiguration.backgroundColor = .white
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
 
