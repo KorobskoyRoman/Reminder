@@ -11,6 +11,8 @@ final class MainViewController: UIViewController {
     typealias DataSource = UICollectionViewDiffableDataSource<Int, Reminder.ID>
     typealias Snapshot = NSDiffableDataSourceSnapshot<Int, Reminder.ID>
 
+    weak var coordinator: AppCoordinator?
+
     private var dataSource: DataSource?
     private var reminders = Reminder.sampleData
 
@@ -21,14 +23,23 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        navigationItem.title = NSLocalizedString("Reminder", comment: "Reminder view controller title")
         setupCollectionView()
     }
 
+    init(coordinator: AppCoordinator?) {
+        self.coordinator = coordinator
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private func setupCollectionView() {
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(collectionView)
-//        collectionView.backgroundColor = .black
+        collectionView.delegate = self
         setupDataSource()
     }
 }
@@ -37,7 +48,7 @@ extension MainViewController {
     private func listLayout() -> UICollectionViewCompositionalLayout {
         var listConfiguration = UICollectionLayoutListConfiguration(appearance: .grouped)
         listConfiguration.showsSeparators = false
-        listConfiguration.backgroundColor = .black
+        listConfiguration.backgroundColor = .clear
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
 
@@ -86,7 +97,7 @@ extension MainViewController {
         cell.contentConfiguration = contentConfiguration
 
         var doneButtonConfiguration = doneButtonConfiguration(for: reminder)
-        doneButtonConfiguration.tintColor = .lightGray.withAlphaComponent(0.8)
+        doneButtonConfiguration.tintColor = .todayListCellDoneButtonTint
 
         cell.accessibilityCustomActions = [doneButtonAccessibilityAction(for: reminder)]
         cell.accessibilityValue = reminder.isComplete ? reminderCompletedValue : reminderNotCompletedValue
@@ -96,7 +107,7 @@ extension MainViewController {
         ]
 
         var backgroundConfiguration = UIBackgroundConfiguration.listGroupedCell()
-        backgroundConfiguration.backgroundColor = .darkGray
+        backgroundConfiguration.backgroundColor = .todayListCellBackground
         cell.backgroundConfiguration = backgroundConfiguration
     }
 
@@ -139,6 +150,11 @@ extension MainViewController {
         update(reminder, with: id)
         applySnapshot(reloading: [id])
     }
+
+    private func showDetails(for id: Reminder.ID) {
+        let reminder = reminder(for: id)
+        coordinator?.performTransition(with: .perform(.reminder), reminder: reminder)
+    }
 }
 
 extension MainViewController {
@@ -147,5 +163,13 @@ extension MainViewController {
     }
     var reminderNotCompletedValue: String {
         NSLocalizedString("Not completed", comment: "Reminder not completed value")
+    }
+}
+
+extension MainViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        let id = reminders[indexPath.item].id
+        showDetails(for: id)
+        return false
     }
 }
