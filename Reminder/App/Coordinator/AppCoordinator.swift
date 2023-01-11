@@ -44,7 +44,7 @@ extension AppCoordinator {
     private func configureNavBarAppearence() -> UINavigationBarAppearance {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .purple
+        appearance.backgroundColor = .gray
         appearance.titleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.navBarTitle]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.navBarLargeTitle]
 
