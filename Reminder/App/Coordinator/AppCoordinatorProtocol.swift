@@ -9,7 +9,8 @@ import UIKit
 
 protocol AppCoordinatorProtocol {
     func start()
-    func performTransition(with type: Transition)
+    func performTransition(with type: Transition,
+                           reminder: Reminder?)
 }
 
 enum Transition {
@@ -19,11 +20,14 @@ enum Transition {
 
 enum ViewControllers {
     case main
+    case reminder
 
     var viewController: UIViewController {
         switch self {
         case .main:
-            return MainViewController()
+            return MainViewController(coordinator: nil)
+        case .reminder:
+            return ReminderViewController(reminder: nil)
         }
     }
 }
