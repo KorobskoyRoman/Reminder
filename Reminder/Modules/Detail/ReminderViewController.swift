@@ -11,7 +11,16 @@ final class ReminderViewController: UIViewController {
     private typealias DataSource = UICollectionViewDiffableDataSource<Section, Row>
     private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Row>
 
-    var reminder: Reminder?
+    var reminder: Reminder? {
+        didSet {
+            guard let reminder,
+            let onChange else { return }
+            (onChange)(reminder)
+        }
+    }
+    var workingReminder: Reminder?
+    var onChange: ((Reminder) -> Void)?
+    var isAddingNewReminder = false
 
     private var dataSource: DataSource?
 
@@ -22,11 +31,14 @@ final class ReminderViewController: UIViewController {
         super.viewDidLoad()
         setNavBar()
         setupCollectionView()
-        applySnapshot()
+        setupDataSource()
     }
 
-    init(reminder: Reminder?) {
+    init(reminder: Reminder?,
+         onChange: @escaping (Reminder?) -> Void) {
         self.reminder = reminder
+        self.workingReminder = reminder
+        self.onChange = onChange
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -43,7 +55,7 @@ final class ReminderViewController: UIViewController {
     private func setupCollectionView() {
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(collectionView)
-        setupDataSource()
+//        setupDataSource()
     }
 
     private func createLayout() -> UICollectionViewCompositionalLayout {
@@ -89,9 +101,11 @@ final class ReminderViewController: UIViewController {
                 for: indexPath,
                 item: itemIdentifier)
         }
+        collectionView.dataSource = dataSource
+        applySnapshot()
     }
 
-    func cellRegistrationHandler(
+    private func cellRegistrationHandler(
         cell: UICollectionViewListCell,
         indexPath: IndexPath,
         row: Row
@@ -110,9 +124,32 @@ final class ReminderViewController: UIViewController {
         case (.notes, .editText(let notes)):
             cell.contentConfiguration = notesConfiguration(for: cell, with: notes)
         default:
-            fatalError("Unexpected combination of section and row.")
+//            fatalError("Unexpected combination of section and row.")
+            return
         }
         cell.tintColor = .todayPrimaryTint
+    }
+
+    private func prepareForViewing() {
+        navigationItem.leftBarButtonItem = nil
+        if workingReminder != reminder {
+            reminder = workingReminder
+        }
+        
+        applySnapshot()
+    }
+
+    private func prepareForEditing() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .cancel,
+            target: self,
+            action: #selector(didCancelEdit))
+        applySnapshotForEditing()
+    }
+
+    @objc func didCancelEdit() {
+        workingReminder = reminder
+        setEditing(false, animated: true)
     }
 }
 
@@ -121,9 +158,15 @@ extension ReminderViewController: UICollectionViewDelegate {
         super.setEditing(editing, animated: animated)
 
         if editing {
-            applySnapshotForEditing()
+            prepareForEditing()
         } else {
-            applySnapshot()
+            if !isAddingNewReminder {
+                prepareForViewing()
+            } else {
+                guard let workingReminder,
+                let onChange else { return }
+                onChange(workingReminder)
+            }
         }
     }
 }
