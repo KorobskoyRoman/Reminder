@@ -23,7 +23,8 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = NSLocalizedString("Reminder", comment: "Reminder view controller title")
+        navigationItem.title = NSLocalizedString("Reminder",
+                                                 comment: "Reminder view controller title")
         setupCollectionView()
     }
 
@@ -40,7 +41,18 @@ final class MainViewController: UIViewController {
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(collectionView)
         collectionView.delegate = self
+        let addButton = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(didPressAddButton(_:)))
+        addButton.accessibilityLabel = NSLocalizedString("Add reminder",
+                                                         comment: "Add button accessibility label")
+        navigationItem.rightBarButtonItem = addButton
         setupDataSource()
+    }
+
+    func add(_ reminder: Reminder) {
+        reminders.append(reminder)
     }
 }
 
@@ -67,7 +79,7 @@ extension MainViewController {
         collectionView.dataSource = dataSource
     }
 
-    private func applySnapshot(reloading ids: [Reminder.ID] = [],
+    func applySnapshot(reloading ids: [Reminder.ID] = [],
                                animatingDifferences: Bool = true) {
         var snapshot = Snapshot()
 
@@ -153,7 +165,13 @@ extension MainViewController {
 
     private func showDetails(for id: Reminder.ID) {
         let reminder = reminder(for: id)
-        coordinator?.performTransition(with: .perform(.reminder), reminder: reminder)
+        coordinator?.performTransition(with: .perform(.reminder),
+                                       reminder: reminder,
+                                       onChange: { [weak self] reminder in
+            guard let reminder else { return }
+            self?.update(reminder, with: reminder.id)
+            self?.applySnapshot(reloading: [reminder.id])
+        })
     }
 }
 
