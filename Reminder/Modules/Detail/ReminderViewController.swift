@@ -29,9 +29,9 @@ final class ReminderViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDataSource()
         setNavBar()
         setupCollectionView()
-        setupDataSource()
     }
 
     init(reminder: Reminder?,
@@ -55,7 +55,12 @@ final class ReminderViewController: UIViewController {
     private func setupCollectionView() {
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(collectionView)
-//        setupDataSource()
+        collectionView.delegate = self
+        if isEditing {
+            applySnapshotForEditing()
+        } else {
+            applySnapshot()
+        }
     }
 
     private func createLayout() -> UICollectionViewCompositionalLayout {
@@ -102,7 +107,6 @@ final class ReminderViewController: UIViewController {
                 item: itemIdentifier)
         }
         collectionView.dataSource = dataSource
-        applySnapshot()
     }
 
     private func cellRegistrationHandler(
@@ -124,7 +128,7 @@ final class ReminderViewController: UIViewController {
         case (.notes, .editText(let notes)):
             cell.contentConfiguration = notesConfiguration(for: cell, with: notes)
         default:
-//            fatalError("Unexpected combination of section and row.")
+            print("Error register cell \nUnexpected combination of section and row.")
             return
         }
         cell.tintColor = .todayPrimaryTint
