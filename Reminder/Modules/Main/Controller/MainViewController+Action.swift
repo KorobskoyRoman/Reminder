@@ -14,7 +14,7 @@ extension MainViewController {
     }
 
     @objc func didCancelAdd(_ sender: UIBarButtonItem) {
-        coordinator?.performTransition(with: .pop)
+        coordinator?.performTransition(with: .dismiss(self))
     }
 
     @objc func didPressAddButton(_ sender: UIBarButtonItem) {

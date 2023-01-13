@@ -17,6 +17,7 @@ protocol AppCoordinatorProtocol {
 enum Transition {
     case perform(ViewControllers)
     case pop
+    case dismiss(UIViewController)
 }
 
 enum ViewControllers {

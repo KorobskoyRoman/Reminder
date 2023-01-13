@@ -36,6 +36,9 @@ final class AppCoordinator: AppCoordinatorProtocol {
             navigationController?.pushViewController(controller, animated: true)
         case .pop:
             navigationController?.popViewController(animated: true)
+        case .dismiss(let viewController):
+//            let controller = getViewControllerByType(type: viewController)
+            viewController.dismiss(animated: true)
         }
     }
 
