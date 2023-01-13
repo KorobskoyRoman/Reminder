@@ -26,11 +26,13 @@ final class AppCoordinator: AppCoordinatorProtocol {
     }
 
     func performTransition(with type: Transition,
-                           reminder: Reminder? = nil) {
+                           reminder: Reminder? = nil,
+                           onChange: ((Reminder?) -> Void)? = nil) {
         switch type {
         case .perform(let viewControllers):
             let controller = getViewControllerByType(type: viewControllers,
-                                                     reminder: reminder)
+                                                     reminder: reminder,
+                                                     onChange: onChange)
             navigationController?.pushViewController(controller, animated: true)
         case .pop:
             navigationController?.popViewController(animated: true)
@@ -38,7 +40,8 @@ final class AppCoordinator: AppCoordinatorProtocol {
     }
 
     private func getViewControllerByType(type: ViewControllers,
-                                         reminder: Reminder? = nil) -> UIViewController {
+                                         reminder: Reminder? = nil,
+                                         onChange: ((Reminder?) -> Void)? = nil) -> UIViewController {
         var viewController: UIViewController
 
         switch type {
@@ -46,7 +49,7 @@ final class AppCoordinator: AppCoordinatorProtocol {
             viewController = MainViewController(coordinator: self)
             return viewController
         case .reminder:
-            viewController = ReminderViewController(reminder: reminder)
+            viewController = ReminderViewController(reminder: reminder, onChange: onChange ?? {_ in})
             return viewController
         }
     }
