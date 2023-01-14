@@ -60,6 +60,10 @@ final class MainViewController: UIViewController {
         addButton.accessibilityLabel = NSLocalizedString("Add reminder",
                                                          comment: "Add button accessibility label")
         navigationItem.rightBarButtonItem = addButton
+        listStyleSegmentedControl.selectedSegmentIndex = listStyle.rawValue
+        listStyleSegmentedControl.addTarget(self, action: #selector(didChangeListStyle(_:)), for: .valueChanged)
+        navigationItem.titleView = listStyleSegmentedControl
+
         setupDataSource()
     }
 
@@ -117,12 +121,13 @@ extension MainViewController {
         collectionView.dataSource = dataSource
     }
 
-    func applySnapshot(reloading ids: [Reminder.ID] = [],
-                               animatingDifferences: Bool = true) {
+    func applySnapshot(reloading idsThatChanged: [Reminder.ID] = [],
+                       animatingDifferences: Bool = true) {
+        let ids = idsThatChanged.filter { id in filteredReminders.contains(where: { $0.id == id }) }
         var snapshot = Snapshot()
 
         snapshot.appendSections([0])
-        snapshot.appendItems(reminders.map { $0.id }) // fixed 'title' to 'id'
+        snapshot.appendItems(filteredReminders.map { $0.id }) // fixed 'title' to 'id'
 
         if !ids.isEmpty {
             snapshot.reloadItems(ids)
