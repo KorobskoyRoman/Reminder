@@ -15,6 +15,18 @@ final class MainViewController: UIViewController {
 
     private var dataSource: DataSource?
     private var reminders = Reminder.sampleData
+    private var listStyle: ReminderListStyle = .today
+
+    private var filteredReminders: [Reminder] {
+        return reminders.filter {
+            listStyle.shouldInclude(date: $0.dueDate)
+        }.sorted(by: { $0.dueDate < $1.dueDate })
+    }
+
+    private let listStyleSegmentedControl = UISegmentedControl(items: [
+        ReminderListStyle.today.name, ReminderListStyle.future.name, ReminderListStyle.all.name
+    ])
+
 
     private lazy var collectionView = UICollectionView(
         frame: view.bounds,
@@ -54,12 +66,38 @@ final class MainViewController: UIViewController {
     func add(_ reminder: Reminder) {
         reminders.append(reminder)
     }
+
+    private func deleteReminder(for id: Reminder.ID) {
+        let index = reminders.indexOfReminder(with: id)
+        reminders.remove(at: index)
+    }
+
+    private func makeSwipeActions(for indexPath: IndexPath?) -> UISwipeActionsConfiguration? {
+        guard let indexPath,
+              let id = dataSource?.itemIdentifier(for: indexPath)
+        else { return nil }
+        let deleteActionTitle = NSLocalizedString("Delete", comment: "Delete action title")
+        let deleteAction = UIContextualAction(
+            style: .destructive, title: deleteActionTitle
+        ) { [weak self] _, _, completion in
+            self?.deleteReminder(for: id)
+            self?.applySnapshot()
+            completion(false)
+        }
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+
+    @objc private func didChangeListStyle(_ sender: UISegmentedControl) {
+        listStyle = ReminderListStyle(rawValue: sender.selectedSegmentIndex) ?? .today
+        applySnapshot()
+    }
 }
 
 extension MainViewController {
     private func listLayout() -> UICollectionViewCompositionalLayout {
         var listConfiguration = UICollectionLayoutListConfiguration(appearance: .grouped)
         listConfiguration.showsSeparators = false
+        listConfiguration.leadingSwipeActionsConfigurationProvider = makeSwipeActions
         listConfiguration.backgroundColor = .white
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
@@ -186,7 +224,7 @@ extension MainViewController {
 
 extension MainViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        let id = reminders[indexPath.item].id
+        let id = filteredReminders[indexPath.item].id
         showDetails(for: id)
         return false
     }
