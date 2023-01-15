@@ -32,6 +32,16 @@ final class MainViewController: UIViewController {
         frame: view.bounds,
         collectionViewLayout: listLayout()
     )
+
+    private var headerView: ProgressHeaderView?
+    var progress: CGFloat {
+        let chunkSize = 1.0 / CGFloat(filteredReminders.count)
+        let progress = filteredReminders.reduce(0.0) {
+            let chunk = $1.isComplete ? chunkSize : 0
+            return $0 + chunk
+        }
+        return progress
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,10 +58,16 @@ final class MainViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        refreshBackground()
+    }
     
     private func setupCollectionView() {
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(collectionView)
+        collectionView.backgroundColor = .todayGradientFutureBegin
         collectionView.delegate = self
         let addButton = UIBarButtonItem(
             barButtonSystemItem: .add,
@@ -94,15 +110,33 @@ final class MainViewController: UIViewController {
     @objc private func didChangeListStyle(_ sender: UISegmentedControl) {
         listStyle = ReminderListStyle(rawValue: sender.selectedSegmentIndex) ?? .today
         applySnapshot()
+        refreshBackground()
+    }
+
+    private func supplementaryRegistrationHandler(
+        progressView: ProgressHeaderView,
+        elementKind: String,
+        indexPath: IndexPath
+    ) {
+        headerView = progressView
+    }
+
+    private func refreshBackground() {
+        collectionView.backgroundView = nil
+        let backgroundView = UIView()
+        let gradientLayer = CAGradientLayer.gradientLayer(for: listStyle, in: collectionView.frame)
+        backgroundView.layer.addSublayer(gradientLayer)
+        collectionView.backgroundView = backgroundView
     }
 }
 
 extension MainViewController {
     private func listLayout() -> UICollectionViewCompositionalLayout {
         var listConfiguration = UICollectionLayoutListConfiguration(appearance: .grouped)
+        listConfiguration.headerMode = .supplementary
         listConfiguration.showsSeparators = false
         listConfiguration.leadingSwipeActionsConfigurationProvider = makeSwipeActions
-        listConfiguration.backgroundColor = .white
+        listConfiguration.backgroundColor = .todayGradientFutureBegin
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
 
@@ -114,6 +148,20 @@ extension MainViewController {
                 using: cellReg,
                 for: indexPath,
                 item: itemIdentifier)
+        }
+
+
+        let headerRegistration = UICollectionView.SupplementaryRegistration(
+            elementKind: ProgressHeaderView.elementKind,
+            handler: supplementaryRegistrationHandler
+        )
+
+        dataSource?.supplementaryViewProvider = {
+            supplementaryView, elementKind, indexPath in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: headerRegistration,
+                for: indexPath
+            )
         }
 
         applySnapshot()
@@ -134,6 +182,7 @@ extension MainViewController {
         }
 
         dataSource?.apply(snapshot, animatingDifferences: animatingDifferences)
+        headerView?.progress = progress
     }
 }
 
@@ -232,5 +281,13 @@ extension MainViewController: UICollectionViewDelegate {
         let id = filteredReminders[indexPath.item].id
         showDetails(for: id)
         return false
+    }
+
+    func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
+        guard elementKind == ProgressHeaderView.elementKind,
+                let progressView = view as? ProgressHeaderView else {
+            return
+        }
+        progressView.progress = progress
     }
 }
