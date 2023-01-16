@@ -14,7 +14,7 @@ final class MainViewController: UIViewController {
     weak var coordinator: AppCoordinator?
 
     private var dataSource: DataSource?
-    private var reminders = Reminder.sampleData
+    private var reminders: [Reminder] = []
     private var listStyle: ReminderListStyle = .today
 
     private var filteredReminders: [Reminder] {
@@ -42,12 +42,15 @@ final class MainViewController: UIViewController {
         }
         return progress
     }
-    
+
+    private var reminderStore: ReminderStore { ReminderStore.shared }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = NSLocalizedString("Reminder",
                                                  comment: "Reminder view controller title")
         setupCollectionView()
+        prepareReminderStore()
     }
 
     init(coordinator: AppCoordinator?) {
@@ -84,12 +87,26 @@ final class MainViewController: UIViewController {
     }
 
     func add(_ reminder: Reminder) {
-        reminders.append(reminder)
+        var reminder = reminder
+        do {
+            let idFromStore = try reminderStore.save(reminder)
+            reminder.id = idFromStore
+            reminders.append(reminder)
+        } catch ReminderError.accessDenied {
+        } catch {
+            Alert.shared.showError(vc: self, error)
+        }
     }
 
     private func deleteReminder(for id: Reminder.ID) {
-        let index = reminders.indexOfReminder(with: id)
-        reminders.remove(at: index)
+        do {
+            try reminderStore.remove(with: id)
+            let index = reminders.indexOfReminder(with: id)
+            reminders.remove(at: index)
+        } catch ReminderError.accessDenied {
+        } catch {
+            Alert.shared.showError(vc: self, error)
+        }
     }
 
     private func makeSwipeActions(for indexPath: IndexPath?) -> UISwipeActionsConfiguration? {
@@ -128,6 +145,35 @@ final class MainViewController: UIViewController {
         backgroundView.layer.addSublayer(gradientLayer)
         collectionView.backgroundView = backgroundView
     }
+
+    private func prepareReminderStore() {
+        Task {
+            do {
+                try await reminderStore.requestAccess()
+                reminders = try await reminderStore.readAll()
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(eventStoreChanged(_:)),
+                    name: .EKEventStoreChanged,
+                    object: nil)
+            } catch ReminderError.accessDenied,
+                        ReminderError.accessRestricted {
+                #if DEBUG
+                reminders = Reminder.sampleData
+                #endif
+            } catch {
+                Alert.shared.showError(vc: self, error)
+            }
+            applySnapshot()
+        }
+    }
+
+    func reminderStoreChanged() {
+        Task {
+            reminders = try await reminderStore.readAll()
+            applySnapshot()
+        }
+    }
 }
 
 extension MainViewController {
@@ -136,7 +182,7 @@ extension MainViewController {
         listConfiguration.headerMode = .supplementary
         listConfiguration.showsSeparators = false
         listConfiguration.leadingSwipeActionsConfigurationProvider = makeSwipeActions
-        listConfiguration.backgroundColor = .todayGradientFutureBegin
+        listConfiguration.backgroundColor = .clear
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
 
@@ -244,8 +290,14 @@ extension MainViewController {
     }
 
     private func update(_ reminder: Reminder, with id: Reminder.ID) {
-        let index = reminders.indexOfReminder(with: id)
-        reminders[index] = reminder
+        do {
+            try reminderStore.save(reminder)
+            let index = reminders.indexOfReminder(with: id)
+            reminders[index] = reminder
+        } catch ReminderError.accessDenied {
+        } catch {
+            Alert.shared.showError(vc: self, error)
+        }
     }
 
     func completeReminder(with id: Reminder.ID) {
