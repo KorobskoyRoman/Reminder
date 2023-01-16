@@ -136,7 +136,7 @@ extension MainViewController {
         listConfiguration.headerMode = .supplementary
         listConfiguration.showsSeparators = false
         listConfiguration.leadingSwipeActionsConfigurationProvider = makeSwipeActions
-        listConfiguration.backgroundColor = .todayGradientFutureBegin
+        listConfiguration.backgroundColor = .clear
         return UICollectionViewCompositionalLayout.list(using: listConfiguration)
     }
 
