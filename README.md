@@ -6,3 +6,4 @@
 - MVC + Coordinator
 - No storyboard
 - Modern UICollectionView layout + DiffableDataSource
+- EventKit with Reminders app integration
